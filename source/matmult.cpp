@@ -6,16 +6,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DATA_SIZE   10                          // Festlegen der Datengröße
+#define DATA_SIZE   4                         // Festlegen der Datengröße
 #define MEM_SIZE    DATA_SIZE * sizeof(float)   // Festelegen der Speichergröße
 
 /** Definieren der Quadrierungsfunktion **/
 const char* KernelSource =
-"#define DATA_SIZE 10																					\n"
+"#define DATA_SIZE 4																					\n"
 "__kernel void test(__global float *input_mat_A, __global float *input_mat_b, __global float *output)   \n"
 "{																	                                    \n"
-"	size_t i = get_global_id(0);									                                    \n"
-"	output[i] = input_mat_A[i] * input_mat_b[i];								                        \n"
+"size_t i, row, col;																					\n"
+"i = get_global_id(0);																					\n"
+"col = i % 2;																							\n"
+"row = i / 2;																							\n"
+"output[i] = input_mat_A[row*2] * input_mat_b[col] + input_mat_A[row*2 + 1] * input_mat_b[col + 2];		\n"
 "}																	                                    \n"
 "\n";
 
@@ -34,7 +37,7 @@ int main(void)
 	cl_program 			program;                  // Deklarieren des Programms
 	cl_mem				input_mat_A, input_mat_B, output;            // Deklarieren des Speichers für input und output
 	float				data[DATA_SIZE] =         // Festlegen des Datensatzes
-	{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+	{ 1, 2, 3, 4};
 	size_t				global[1] = { DATA_SIZE };  // Initialisierung der globalen Variable
 	float				results[DATA_SIZE] = { 0 }; // Initialisierung der Ergebnisse
 
@@ -143,9 +146,9 @@ int main(void)
 
 	// Definiere die Reihenfolge der Argumente des Kerns
 	clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_mat_A);
-	clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_mat_B);
+	clSetKernelArg(kernel, 1, sizeof(cl_mem), &input_mat_B);
 
-	clSetKernelArg(kernel, 1, sizeof(cl_mem), &output);
+	clSetKernelArg(kernel, 2, sizeof(cl_mem), &output);
 
 
 	/* 3)  Speicher für Ein- und Ausgabe zuweisen*/
@@ -165,7 +168,8 @@ int main(void)
 
 
 	/* 4) Aufräumen der OpenCL Ressourcen*/
-	clReleaseMemObject(input);
+	clReleaseMemObject(input_mat_A);
+	clReleaseMemObject(input_mat_B);
 	clReleaseMemObject(output);
 	clReleaseProgram(program);
 	clReleaseKernel(kernel);
