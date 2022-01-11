@@ -1,2 +1,1 @@
-add_executable(helloeworld helloworld.cpp)
 add_executable(Matrix-Multiplikation_mit_OpenCL matmult.cpp)

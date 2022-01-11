@@ -6,19 +6,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DATA_SIZE   4                         // Festlegen der Datengröße
+#define DATA_SIZE   1600                        // Festlegen der Datengröße
 #define MEM_SIZE    DATA_SIZE * sizeof(float)   // Festelegen der Speichergröße
 
 /** Definieren der Quadrierungsfunktion **/
 const char* KernelSource =
-"#define DATA_SIZE 4																					\n"
+"#define DATA_SIZE 1600																				\n"
 "__kernel void test(__global float *input_mat_A, __global float *input_mat_b, __global float *output)   \n"
 "{																	                                    \n"
-"size_t i, row, col;																					\n"
+"size_t i, row, col, len;																				\n"
+"len = 40;																					\n"
 "i = get_global_id(0);																					\n"
-"col = i % 2;																							\n"
-"row = i / 2;																							\n"
-"output[i] = input_mat_A[row*2] * input_mat_b[col] + input_mat_A[row*2 + 1] * input_mat_b[col + 2];		\n"
+"col = i % len;																							\n"
+"row = i / len;																							\n"
+"for(int j = 0; j< len; j++) {																			\n"
+"output[i] += input_mat_A[row*len + j] * input_mat_b[col + (j * len)];								    \n"
+"}																	                                    \n"
 "}																	                                    \n"
 "\n";
 
@@ -36,10 +39,15 @@ int main(void)
 	cl_command_queue	command_queue;            // Deklarieren der Befehlswarteschlange
 	cl_program 			program;                  // Deklarieren des Programms
 	cl_mem				input_mat_A, input_mat_B, output;            // Deklarieren des Speichers für input und output
-	float				data[DATA_SIZE] =         // Festlegen des Datensatzes
-	{ 1, 2, 3, 4};
+	float				data[DATA_SIZE];			// Festlegen des Datensatzes
 	size_t				global[1] = { DATA_SIZE };  // Initialisierung der globalen Variable
 	float				results[DATA_SIZE] = { 0 }; // Initialisierung der Ergebnisse
+
+
+
+	for (int i = 0; i < DATA_SIZE; i++) {
+		data[i] = (float)(rand() % 10);
+	}
 
 	/* 1) Initialisierung der Geräte*/
 
