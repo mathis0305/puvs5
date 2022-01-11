@@ -9,7 +9,7 @@
 #define DATA_SIZE   10                          // Festlegen der Datengröße
 #define MEM_SIZE    DATA_SIZE * sizeof(float)   // FEstelegen der Speichergröße
 
-/** Erstellen der Kernelsource **/
+/** Definieren der Quadrierungsfunktion **/
 const char* KernelSource =
 "#define DATA_SIZE 10												\n"
 "__kernel void test(__global float *input, __global float *output)  \n"
