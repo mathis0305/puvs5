@@ -11,12 +11,12 @@
 
 /** Definieren der Quadrierungsfunktion **/
 const char* KernelSource =
-"#define DATA_SIZE 10												\n"
-"__kernel void test(__global float *input, __global float *output)  \n"
-"{																	\n"
-"	size_t i = get_global_id(0);									\n"
-"	output[i] = input[i] * input[i];								\n"
-"}																	\n"
+"#define DATA_SIZE 10																					\n"
+"__kernel void test(__global float *input_mat_A, __global float *input_mat_b, __global float *output)   \n"
+"{																	                                    \n"
+"	size_t i = get_global_id(0);									                                    \n"
+"	output[i] = input_mat_A[i] * input_mat_b[i];								                        \n"
+"}																	                                    \n"
 "\n";
 
 /** Deklaration der Variablen für das Hello World Programm**/
@@ -27,12 +27,12 @@ int main(void)
 	char			    platform_name[1024];      // Plattform Name
 	cl_device_id	    device_id = NULL;         // Nummer zur Defintion des Geräts
 	cl_uint			    num_of_platforms = 0,     // Anzahl der Plattformen
-		num_of_devices = 0;						  // Anzahl der Geräte
+						num_of_devices = 0;		  // Anzahl der Geräte
 	cl_context 			context;                  // Deklarieren des Kontexts
 	cl_kernel 			kernel;                   // Deklarieren des Kernels
 	cl_command_queue	command_queue;            // Deklarieren der Befehlswarteschlange
 	cl_program 			program;                  // Deklarieren des Programms
-	cl_mem				input, output;            // Deklarieren des Speichers für input und output
+	cl_mem				input_mat_A, input_mat_B, output;            // Deklarieren des Speichers für input und output
 	float				data[DATA_SIZE] =         // Festlegen des Datensatzes
 	{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 	size_t				global[1] = { DATA_SIZE };  // Initialisierung der globalen Variable
@@ -132,14 +132,19 @@ int main(void)
 	/* 2) Kontext und Befehlswarteschlange*/
 
 	// Erzeuge Puffer für Ein- und Ausgabe
-	input = clCreateBuffer(context, CL_MEM_READ_ONLY, MEM_SIZE, NULL, &err);
+	input_mat_A = clCreateBuffer(context, CL_MEM_READ_ONLY, MEM_SIZE, NULL, &err);
+	input_mat_B = clCreateBuffer(context, CL_MEM_READ_ONLY, MEM_SIZE, NULL, &err);
+
 	output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, MEM_SIZE, NULL, &err);
 
 	// Kopiere zusammenhängende Daten aus "data" in Eingabe-Puffer von input
-	clEnqueueWriteBuffer(command_queue, input, CL_TRUE, 0, MEM_SIZE, data, 0, NULL, NULL);
+	clEnqueueWriteBuffer(command_queue, input_mat_A, CL_TRUE, 0, MEM_SIZE, data, 0, NULL, NULL);
+	clEnqueueWriteBuffer(command_queue, input_mat_B, CL_TRUE, 0, MEM_SIZE, data, 0, NULL, NULL);
 
 	// Definiere die Reihenfolge der Argumente des Kerns
-	clSetKernelArg(kernel, 0, sizeof(cl_mem), &input);
+	clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_mat_A);
+	clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_mat_B);
+
 	clSetKernelArg(kernel, 1, sizeof(cl_mem), &output);
 
 
